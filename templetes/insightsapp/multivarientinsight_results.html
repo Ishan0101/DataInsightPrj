@@ -1,0 +1,141 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+{% block title %}Insight Results{% endblock %}
+{% block content %}
+    {% if err %}<script>alert('{{err }}');</script>{% endif %}
+    {% if data %}
+        <div class='container'>
+            <div class='col-sm-3'>
+                <label>Obtain insights as:</label>
+                <select class="form-select shadow-none bg-light border-1"
+                        name='insight'
+                        id='select_visual'>
+                    <option value='table'>
+                        Table
+                    </option>
+                    {% if bar_chart %}
+                        <option value='bar'>
+                            Bar Graph
+                        </option>
+                    {% endif %}
+                    {% if line_plot %}
+                        <option value='line'>
+                            Line Plot
+                        </option>
+                    {% endif %}
+                </select>
+                <br>
+            </div>
+            <div id ='content'>
+                <h5 style='text-align:center;'>Obtained Insights of {{ insight1 }} and {{ insight2 }}</h5>
+                <div class ='row' id='row'>
+                    <div class='col-sm-8' id='col8'>
+                        <div id = 'bar'>
+                            <img src="data:image/png;base64,{{ bar_chart|safe }}" width="600" />
+                        </div>
+                        <div id = 'line'>
+                            <img src="data:image/png;base64,{{ line_plot|safe }}" width="600" />
+                        </div>
+                        <div id='tab'>
+                            {% load dynamic_regroup %}
+                            {% dynamic_regroup data by insight1 as d %}
+                            <table class="table" style="font-size: 10px;">
+                                <tr style=' border-bottom:1px solid black; border-top:1px solid black'>
+                                    {% for i in present_columns %}
+                                    <th>{{i}}</th>
+                                    {% endfor %}
+                                </tr>
+                                {% for data0 in d %}
+                                    {% for data in data0.list %}
+                                        <tr>
+                                            {% if forloop.first %}
+                                                    <td rowspan = '{{data0.list|length}}'  style=' border-bottom:1px solid black'>{{data0.grouper}}</td>
+                                            {% endif %}
+                                            {% if forloop.last %}
+                                            {% for j in present_columns %}
+                                                {% if not forloop.first %}
+                                                {% load get_data %}
+                                                <td style=' border-bottom:1px solid black'>{{ data|get_data:j}}</td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% else %}
+                                            {% for j in present_columns %}
+                                                {% if not forloop.first %}
+                                                {% load get_data %}
+                                                <td>{{ data|get_data:j}}</td>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
+                                            
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </table>
+                        </div>
+                    </div>  
+                    <div class ='col-sm-4' style='border-left: 1px solid black;' id='col4'>
+                        <p style='text-align:center;' >The maximum count is seen in:</p>
+                            <table class="table" style="font-size: 10px; border:1px">
+                                <tr>
+                                {% for i in present_columns %}
+                                    <th>{{i}}</th>
+                                {% endfor %}
+                                </tr>
+                                {% for i in max_data %}
+                                <tr>
+                                {% for j in present_columns %}
+                                    {% load get_data %}
+                                    <td>{{ i|get_data:j}}</td>
+                                {% endfor %}
+                                </tr> 
+                                {% endfor %}
+                            </table>
+                            <br>
+                            <br>
+                            <p style='text-align:center;' >The minimum count is seen in:</p>
+                            <table class="table" style="font-size: 10px; border:1px">
+                                <tr>
+                                {% for i in present_columns %}
+                                    <th>{{i}}</th>
+                                {% endfor %}
+                                </tr>
+                                {% for i in min_data %}
+                                <tr>
+                                {% for j in present_columns %}
+                                    {% load get_data %}
+                                    <td>{{ i|get_data:j}}</td>
+                                {% endfor %}
+                                </tr> 
+                                {% endfor %}
+                            </table>
+                    </div>
+                </div>   
+            </div>  
+        </div>
+    {% endif %}
+    {% endblock %}
+    {% block javascript %} 
+      <script>
+        $(document).ready(function() {
+                $("#select_visual").on('change', function() {
+                    $(this).find("option:selected").each(function() {
+                        var val = $(this).attr("value");
+                        if (val == 'table') {
+                            $('#bar').hide();
+                            $('#tab').show();
+                            $('#line').hide()
+                        } else if(val=='bar'){
+                            $('#bar').show();
+                            $('#tab').hide();
+                            $('#line').hide()
+                        } else if(val=='line'){
+                            $('#bar').hide();
+                            $('#tab').hide();
+                            $('#line').show();
+                        }
+  
+                    });
+                }).change();
+            });
+      </script>
+{% endblock %}

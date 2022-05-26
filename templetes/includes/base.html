@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+            {% block title %}{% endblock %}
+        </title>
+        <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.3.4/jspdf.debug.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+        {% block stylesheets %}
+            <!-- CSS only -->
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css"
+                  rel="stylesheet"
+                  integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor"
+                  crossorigin="anonymous">
+        {% endblock %}
+        {% block extra_head %}
+            <!-- JavaScript Bundle with Popper -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+                    integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+                    crossorigin="anonymous"></script>
+        {% endblock %}
+    </head>
+    <body>
+        <div class="container">
+            {% block navbar %}
+                {% include 'includes/navbar.html' %}
+            {% endblock %}
+            <div class="row" style='padding:10px'>
+                {% block messages %}{% endblock %}
+                {% block content %}{% endblock %}
+            </div>
+            {% block footer %}{% endblock %}
+        </div>
+        {% block javascript %}{% endblock %}
+        {% block extra_js %}
+            <script>
+              function savePDF() {
+                $('#row').removeClass('row');
+                $('#col8').removeClass('col-sm-8');
+                $('#col4').removeClass('col-sm-4');
+                var element = document.getElementById('content');
+                var opt = {
+                  margin: 0.5,
+                  filename: 'download.pdf',
+                  image: { type: 'png', quantity: 1 },
+                  html2canvas: { scale: 1 },
+                  jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', precision: '12' }
+                };
+                html2pdf().set(opt).from(element).save();
+                setTimeout(function(){
+                  $('#row').addClass('row');
+                  $('#col8').addClass('col-sm-8');
+                  $('#col4').addClass('col-sm-4');
+                }, 5000);
+              }
+            </script>
+        {% endblock %}
+        {% block extra_footer %}{% endblock %}
+    </body>
+</html>

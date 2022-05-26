@@ -1,0 +1,13 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'datainsights:home' %}">Home</a>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-link" href="{% url 'datainsights:insights' %}">Insights</a>
+        {% if insight or insight1 %}
+            <a class="nav-link" href="#" onclick="savePDF()">Export</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

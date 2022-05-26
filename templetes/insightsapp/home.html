@@ -1,0 +1,46 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+
+{% block title %}HomePage{% endblock %}
+
+{% block content %}
+    {% if err %}
+        <script>
+            alert('{{err}}');
+        </script>
+    {% endif %}
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Select or Drag and Drop The File</label>
+            <input class="form-control" type="file" id="file" name='file' required>
+        </div>
+        <input type="submit" value="Upload" class="btn btn-success mt-3">
+    </form>
+    {% if data %}
+    {% if present_columns %}
+    <div style='padding-top:5px;'>
+        <a href="{% url 'datainsights:insights' %}" class="btn btn-success mt-3" role='button'>Insights</a>
+    </div>
+    <div class='container'>
+        <h5 style='text-align:center;'>Provided Data</h5>
+        <table class="table" style="font-size: 10px; border:1px">
+            <tr>
+            {% for i in present_columns %}
+                <th>{{i}}</th>
+            {% endfor %}
+            </tr>
+            {% for i in data %}
+            <tr>
+            {% for j in present_columns %}
+                {% load get_data %}
+                <td>{{ i|get_data:j}}</td>
+            {% endfor %}
+            </tr> 
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}    
+    {% endif %}
+
+{% endblock %}
