@@ -1,0 +1,103 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+{% block title %}Forecast Results{% endblock %}
+{% block content %}
+        <div class='container'>
+            {% if err %}<p style='background-color:red; color:white; text-align:center;'>{{err }}</p>{% endif %}
+            <p>
+                Enter the number of forecast required:
+            </p>
+            <form class='col-sm-3' method='post' id='number_form'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="number" min='1' class="form-control" id="no" name='no'>
+                </div>
+                <input type="submit" class="btn btn-outline-danger mt-3" value='Submit' id='Submit'>
+            </form>
+            <br>
+        </div>
+        <div class='wait' style='text-align:center;'></div>
+        {% if data %}
+            <div class='container'>
+                <div class='col-sm-3'>
+                    <label>Obtain insights as:</label>
+                    <select class="form-select shadow-none bg-light border-1"
+                            name='insight'
+                            id='select_visual'>
+                        <option value='table'>
+                            Table
+                        </option>
+                        {% if line_plot %}
+                            <option value='line'>
+                                Line Plot
+                            </option>
+                        {% endif %}
+                    </select>
+                    <br>
+                </div>
+                <div id='content'>
+                    <h5 style='text-align:center;'>Forecast Results of {{ parameter }} on {{ insight }}</h5>
+                    <div id ='tab'>
+                        <table class="table" style="font-size: 10px; border:1px">
+                            <tr>
+                                {% for i in present_columns %}<th>{{ i }}</th>{% endfor %}
+                            </tr>
+                            {% for i in data %}
+                                <tr>
+                                    {% for j in present_columns %}
+                                        {% load get_data %}
+                                        <td>{{ i|get_data:j }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                    <div id = 'line' style='text-align:center;'>
+                        <img src="data:image/png;base64,{{ line_plot|safe }}"
+                             width="600"
+                             height='100%'/>
+                    </div>
+                </div>
+            </div>
+    {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script>
+                $(document).on('change','#select_visual', function() {
+                    $(this).find("option:selected").each(function() {
+                        var val = $(this).attr("value");
+                        if (val == 'table') {
+                            $('#tab').show();
+                            $('#line').hide();
+                        } else if(val=='line'){
+                            $('#tab').hide();
+                            $('#line').show()
+                        }
+  
+                    });
+                }).change();
+    </script>
+    <script>
+        $(document).on('submit','#number_form',function(e){
+                    e.preventDefault();
+                     $('.wait').prepend('<br><br><img src="{% static 'images/Hourglass.gif' %}">')
+                     $.ajax({
+                        url : "{% url 'datainsights:forecast' %}", 
+                        type : "POST", // http method
+                        data : { 
+                            no : $('#no').val(),
+                            'csrfmiddlewaretoken':'{{ csrf_token }}'
+                         }, // data sent with the post request
+
+                        success : function(data) {
+                           $('.container').replaceWith(data);
+                           $('#line').hide();
+                        },
+
+                        // handle a non-successful response
+                        error : function(xhr,errmsg,err) {
+                        }
+                    });
+                });
+    </script>
+{% endblock %}

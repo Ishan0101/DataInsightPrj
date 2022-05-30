@@ -1,0 +1,204 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+{% block title %}Insights{% endblock %}
+{% block content %}
+    <div class='container'>
+        <div id='err'>
+        </div>
+        <div class ='col-sm-4'>
+            <p>Select the type of analysis</p>
+            <select class="form-select shadow-none bg-light border-1" name='insight' id='select_type'>
+                <option value='single'>
+                            Single Table
+                </option>
+                <option value='multi'>Multivarient Table</option>
+            </select>
+            <br/>
+        </div>
+        <div id='single' style='border-top:5px;'>
+            <form class='col-sm-4' method='post' id = 'singleform'>
+                {% csrf_token %}
+                <p>Select the column to Obtain Insights About</p>
+                <div class="input-group-text p-0">
+                    <select class="form-select shadow-none bg-light border-0" name='insight' required='required'>
+                        {% for i in suitable_columns %}
+                            <option>
+                                {{i}}
+                            </option>
+                        {% endfor %}
+                        {% for i in date_columns %}
+                            <option>
+                                {{i}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <p>Select parameter to obtain inisghts on</p>
+                <div class="input-group-text p-0">
+                    <select class="form-select shadow-none bg-light border-0" name='parameter' required='required' id='parameter'>
+                        <option value='Count'>Count</option>
+                        {% for i in numeric_columns %}
+                            <option value='{{i}}'>
+                                {{i}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <br/>
+                </div>
+                <div  id='insight_type'>
+                    <p>Select the insight type</p>
+                    <div class="input-group-text p-0">
+                        <select class="form-select shadow-none bg-light border-0" name='insight_type'>
+                            <option>Sum</option>
+                            <option>Average</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-outline-danger mt-3" value='Submit'>
+                <br/>
+            </form>
+        </div>
+        <div id='multi' style='border-top:5px;'>
+        <p>Select the columns to Obtain Insights About</p>
+            <form class='col-sm-4' action={% url 'datainsights:multivarientinsights' %}  method='post' id='multivarientform'>
+                {% csrf_token %}
+                <div class='row'>
+                    <div class = 'col-sm-6'>
+                        <div class="input-group-text p-0">
+                            <select class="form-select shadow-none bg-light border-0" name='insight1' required='required' id='insight1'>
+                                {% for i in suitable_columns %}
+                                    <option>
+                                        {{i}}
+                                    </option>
+                                {% endfor %}
+                                {% for i in date_columns %}
+                                    <option>
+                                        {{i}}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class = 'col-sm-6'>
+                        <div class="input-group-text p-0">
+                            <select class="form-select shadow-none bg-light border-0" name='insight2' required='required' id='insight2'>
+                                {% for i in suitable_columns %}
+                                    <option>
+                                        {{i}}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <p>Select parameter to obtain inisghts on</p>
+                <div class="input-group-text p-0">
+                    <select class="form-select shadow-none bg-light border-0" name='parameter' required='required'  id='parameter1'>
+                        <option value='Count'>Count</option>
+                        {% for i in numeric_columns %}
+                            <option value='{{i}}'>
+                                {{i}}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <br/>
+                </div>
+                <div  id='insight_type1'>
+                    <p>Select the insight type</p>
+                    <div class="input-group-text p-0">
+                        <select class="form-select shadow-none bg-light border-0" name='insight_type'>
+                            <option>Sum</option>
+                            <option>Average</option>
+                        </select>
+                    </div>
+                </div>
+                <input type="submit" class="btn btn-outline-danger mt-3" value='Submit'>
+                <br/>
+            </form>
+        </div>
+    </div>
+{% comment %} 
+    <div class='row' style='padding-top:5px;'>
+        <div class='col-sm-4'>
+            <h5>Suitable Columns for Analysis</h5>
+            <ul>
+                {% for i in suitable_columns %}
+                    <li>{{i}}</li>
+                {% endfor %}    
+            </ul>
+        </div>
+        <div class='col-sm-4'>
+            <h5>Date Columns</h5>
+            <ul>
+                {% for i in date_columns %}
+                    <li>{{i}}</li>
+                {% endfor %}    
+            </ul>
+        </div>
+        <div class='col-sm-4'>
+            <h5>Numeric Columns</h5>
+            <ul>
+                {% for i in numeric_columns %}
+                    <li>{{i}}</li>
+                {% endfor %}    
+            </ul>
+        </div>
+    </div> {% endcomment %}
+    
+{% endblock %}
+
+{% block javascript %} 
+      <script>
+        $(document).ready(function() {     
+                $("#parameter").on('change', function() {
+                    $(this).find("option:selected").each(function() {
+                        var val = $(this).attr("value");
+                        if (val == 'Count') {
+                            $('#insight_type').hide();
+                        } else{
+                            $('#insight_type').show();
+                        }
+                    });
+                }).change();
+
+                $("#parameter1").on('change', function() {
+                    $(this).find("option:selected").each(function() {
+                        var val = $(this).attr("value");
+                        if (val == 'Count') {
+                            $('#insight_type1').hide();
+                        } else{
+                            $('#insight_type1').show();
+                        }
+                    });
+                }).change();
+
+                $("#select_type").on('change', function() {
+                    $(this).find("option:selected").each(function() {
+                        var val = $(this).attr("value");
+                        if (val == 'single') {
+                            $('#single').show();
+                            $('#multi').hide()
+                        } else if(val=='multi'){
+                            $('#multi').show();
+                            $('#single').hide();
+                        }
+  
+                    });
+                }).change();
+
+
+                $('#multivarientform').on('submit',function(e){
+                    e.preventDefault();
+                    var insight1 = document.getElementById("insight1").value;
+                    var insight2 = document.getElementById("insight2").value;
+                    console.log(insight1)
+                    if(insight1 == insight2){
+                        $('#err').replaceWith('<p style="background-color:red; color:white; text-align:center;">Both the fields cannot be the same.</p>');
+                    }
+                    else{
+                        $(this).unbind('submit').submit()
+                    }    
+                });
+            });
+    </script>
+{% endblock %}

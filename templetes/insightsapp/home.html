@@ -1,0 +1,74 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+{% block title %}HomePage{% endblock %}
+{% block content %}
+    <div class='container'>
+        {% if err %}
+            <p style='background-color:red; color:white; text-align:center;'>
+                {{ err }}
+            </p>
+        {% endif %}
+        <form action="" method="post" enctype="multipart/form-data" id='input_form'>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Select or Drag and Drop The File</label>
+                <input class="form-control" type="file" id="file" name='file' required>
+            </div>
+            <input type="submit" value="Upload" class="btn btn-outline-danger mt-3">
+        </form>
+        <div class='wait' style='text-align:center;'></div>
+        {% if data %}
+            {% if present_columns %}
+                <div style='padding-top:5px;'>
+                    <a href="{% url 'datainsights:insights' %}"
+                       class="btn btn-outline-danger mt-3"
+                       role='button'>Insights</a>
+                </div>
+                <div>
+                    <h5 style='text-align:center;'>Provided Data</h5>
+                    <table class="table" style="font-size: 10px; border:1px">
+                        <tr>
+                            {% for i in present_columns %}<th>{{i }}</th>{% endfor %}
+                        </tr>
+                        {% for i in data %}
+                            <tr>
+                                {% for j in present_columns %}
+                                    {% load get_data %}
+                                    <td>{{ i|get_data:j }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+{% block javascript %}
+    <script>
+        $(document).on('submit','#input_form',function(e){
+                    e.preventDefault();
+                     $('.wait').prepend('<br><br><img src="{% static 'images/Hourglass.gif' %}">')
+                     var file = $('#file')[0].files[0]
+                     var fd = new FormData();
+                     console.log(fd)
+                     fd.append('file',file);
+                     fd.append('csrfmiddlewaretoken','{{ csrf_token }}');
+                     console.log(fd)
+                     $.ajax({
+                        url : "{% url 'datainsights:home' %}", 
+                        type : "POST", 
+                        data : fd,
+                        processData : false,
+                        contentType : false,
+                        success : function(data) {
+                           $('.container').replaceWith(data);
+                        },
+
+                        // handle a non-successful response
+                        error : function(xhr,errmsg,err) {
+                        }
+                    });
+                });
+    </script>
+{% endblock %}
