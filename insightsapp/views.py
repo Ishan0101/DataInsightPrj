@@ -62,6 +62,7 @@ class Home(View):
 def addlabels(x,y):
     for i in range(len(x)):
         plt.text(i,y[i],y[i], ha = 'center')
+        
 
 
 insight = None
@@ -127,6 +128,8 @@ class SingleInsights(View):
                 present_columns = results.columns.to_list()
                 results.index=results.index.to_series().astype(str)
                 results.plot.line(x=insight,y='Count').set_ylabel('Count')
+                current_values = plt.gca().get_yticks()
+                plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                 buf = BytesIO()
                 plt.savefig(buf, format='png',dpi = 300, bbox_inches='tight')
                 line_plot = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
@@ -181,6 +184,8 @@ class SingleInsights(View):
                     pass
                 try:
                     results.plot.bar(x=insight,y='Count',figsize=(9,9))
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     addlabels(results[insight], results['Count'])
                     plt.ylabel('Count')
                     buf = BytesIO()
@@ -194,6 +199,8 @@ class SingleInsights(View):
                     results = results.sort_values(by=['Count'],ascending=False)
                     top = results.head(10).reset_index()
                     top.plot.bar(x=insight,y='Count',figsize=(9,9))
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     addlabels(top[insight],top['Count'])
                     plt.title('Bar chart for top 10 values')
                     plt.ylabel('Count')
@@ -207,7 +214,7 @@ class SingleInsights(View):
             if insight_type == 'Sum':
                 if insight in date_columns:
                     df[insight] = pd.to_datetime(df[insight])
-                    insight_results = df.resample('M',on = insight)[parameter].sum()
+                    insight_results = df.resample('M',on = insight)[parameter].sum().round(2)
                     insight_results = insight_results.to_frame()
                     results = insight_results.rename(columns={insight_results.columns[0]:'Total'})
                     results = results.to_period('M').reset_index()
@@ -215,6 +222,8 @@ class SingleInsights(View):
                     present_columns = results.columns.to_list()
                     results.index=results.index.to_series().astype(str)
                     results.plot.line(x=insight,y='Total').set_ylabel('Total')
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     buf = BytesIO()
                     plt.savefig(buf, format='png',dpi = 300, bbox_inches='tight')
                     line_plot = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
@@ -234,7 +243,7 @@ class SingleInsights(View):
                     context = {'data':data,'present_columns':present_columns,'line_plot':line_plot,'max_data':max_data,'min_data':min_data,'insight':insight,'parameter':parameter,'pred':'possible'}
                     df[insight] = df[insight].astype(str)
                 else:
-                    insight_results = df.groupby(insight)[parameter].sum().reset_index()
+                    insight_results = df.groupby(insight)[parameter].sum().round(2).reset_index()
                     results = insight_results.rename(columns={insight_results.columns[1]:'Total'})
                     present_columns = results.columns.to_list()
                     json_records = results.reset_index().to_json(orient ='records')
@@ -269,6 +278,8 @@ class SingleInsights(View):
                         pass
                     try:
                         results.plot.bar(x=insight,y='Total',figsize=(9,9))
+                        current_values = plt.gca().get_yticks()
+                        plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                         addlabels(results[insight], results['Total'])
                         plt.ylabel('Count')
                         buf = BytesIO()
@@ -283,6 +294,8 @@ class SingleInsights(View):
                         results = results.sort_values(by=['Total'],ascending = False)
                         top = results.head(10).reset_index()
                         top.plot.bar(x=insight,y='Total',figsize=(9,9))
+                        current_values = plt.gca().get_yticks()
+                        plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                         addlabels(top[insight],top['Total'])
                         plt.title('Bar chart for top 10 values')
                         plt.ylabel('Total')
@@ -294,7 +307,7 @@ class SingleInsights(View):
             if insight_type == 'Average':
                 if insight in date_columns:
                     df[insight] = pd.to_datetime(df[insight])
-                    insight_results = df.resample('M',on = insight)[parameter].mean()
+                    insight_results = df.resample('M',on = insight)[parameter].mean().round(2)
                     insight_results = insight_results.to_frame()
                     results = insight_results.rename(columns={insight_results.columns[0]:'Total'})
                     results = results.to_period('M').reset_index()
@@ -302,6 +315,8 @@ class SingleInsights(View):
                     present_columns = results.columns.to_list()
                     results.index=results.index.to_series().astype(str)
                     results.plot.line(x=insight,y='Total').set_ylabel('Total')
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     buf = BytesIO()
                     plt.savefig(buf, format='png',dpi = 300, bbox_inches='tight')
                     line_plot = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
@@ -321,7 +336,7 @@ class SingleInsights(View):
                     context = {'data':data,'present_columns':present_columns,'line_plot':line_plot,'max_data':max_data,'min_data':min_data,'insight':insight,'parameter':parameter,'pred':'possible'}
                     df[insight] = df[insight].astype(str)
                 else:
-                    insight_results = df.groupby(insight)[parameter].mean().reset_index()
+                    insight_results = df.groupby(insight)[parameter].mean().round(2).reset_index()
                     results = insight_results.rename(columns={insight_results.columns[1]:'Total'})
                     present_columns = results.columns.to_list()
                     json_records = results.reset_index().to_json(orient ='records')
@@ -356,6 +371,8 @@ class SingleInsights(View):
                         pass
                     try:
                         results.plot.bar(x=insight,y='Total',figsize=(9,9))
+                        current_values = plt.gca().get_yticks()
+                        plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                         addlabels(results[insight], results['Total'])
                         plt.ylabel('Count')
                         buf = BytesIO()
@@ -370,6 +387,8 @@ class SingleInsights(View):
                         results = results.sort_values(by=['Total'],ascending = False)
                         top = results.head(10).reset_index()
                         top.plot.bar(x=insight,y='Total',figsize=(9,9))
+                        current_values = plt.gca().get_yticks()
+                        plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                         addlabels(top[insight],top['Total'])
                         plt.title('Bar chart for top 10 values')
                         plt.ylabel('Total')
@@ -396,10 +415,12 @@ class MultiVarientInsights(View):
                 insight_results = df.groupby([pd.Grouper(key=insight1, axis = 0, freq = 'M'),insight2]).count().reset_index()
                 insight_results = insight_results.iloc[:,0:3]
                 results = insight_results.rename(columns={insight_results.columns[2]:'Count'})
-                total_count = results.groupby(insight1)['Count'].sum().to_list()
+                total_count = results.groupby(insight1)['Count'].sum().round(2).to_list()
                 results[insight1] = results[insight1].dt.strftime("%Y-%b")
                 fig, ax = plt.subplots(figsize=(9,9))
                 sns.lineplot(data=results, x=insight1, y='Count', hue=insight2)
+                current_values = plt.gca().get_yticks()
+                plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                 for i in ax.containers:
                     ax.bar_label(i)
                 plt.xlabel(insight1)
@@ -429,10 +450,12 @@ class MultiVarientInsights(View):
                 insight_results = df.groupby([insight1,insight2]).count().reset_index()
                 insight_results = insight_results.iloc[:,0:3]
                 results = insight_results.rename(columns={insight_results.columns[2]:'Count'})
-                total_count = results.groupby(insight1)['Count'].sum().to_list()
+                total_count = results.groupby(insight1)['Count'].sum().round(2).to_list()
                 fig, ax = plt.subplots(figsize=(9,9))
                 sns.set(font_scale=0.8)
                 sns.barplot(data=results, x=insight1, y='Count', hue=insight2)
+                current_values = plt.gca().get_yticks()
+                plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                 for i in ax.containers:
                     ax.bar_label(i)
                 plt.xlabel(insight1)
@@ -463,10 +486,12 @@ class MultiVarientInsights(View):
                     df[insight1] = pd.to_datetime(df[insight1])
                     insight_results = df.groupby([pd.Grouper(key=insight1, axis = 0, freq = 'M'),insight2])[parameter].sum().reset_index()
                     results = insight_results.rename(columns={insight_results.columns[2]:'Total'})
-                    total_by_groups = results.groupby(insight1)['Total'].sum().to_list()
+                    total_by_groups = results.groupby(insight1)['Total'].sum().round(2).to_list()
                     results[insight1] = results[insight1].dt.strftime("%Y-%b")
                     fig, ax = plt.subplots(figsize=(9,9))
                     sns.lineplot(data=results, x=insight1, y='Total', hue=insight2)
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     for i in ax.containers:
                         ax.bar_label(i)
                     plt.xlabel(insight1)
@@ -495,10 +520,12 @@ class MultiVarientInsights(View):
                 else:
                     insight_results = df.groupby([insight1,insight2])[parameter].sum().reset_index()
                     results = insight_results.rename(columns={insight_results.columns[2]:'Total'})
-                    total_by_groups = results.groupby(insight1)['Total'].sum().to_list()
+                    total_by_groups = results.groupby(insight1)['Total'].sum().round(2).to_list()
                     fig, ax = plt.subplots(figsize=(9,9))
                     sns.set(font_scale=0.8)
                     sns.barplot(data=results, x=insight1, y='Total', hue=insight2)
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     for i in ax.containers:
                         ax.bar_label(i)
                     plt.xlabel(insight1)
@@ -527,10 +554,12 @@ class MultiVarientInsights(View):
                     df[insight1] = pd.to_datetime(df[insight1])
                     insight_results = df.groupby([pd.Grouper(key=insight1, axis = 0, freq = 'M'),insight2])[parameter].mean().reset_index()
                     results = insight_results.rename(columns={insight_results.columns[2]:'Total'})
-                    total_by_groups = results.groupby(insight1)['Total'].mean().to_list()
+                    total_by_groups = results.groupby(insight1)['Total'].mean().round(2).to_list()
                     results[insight1] = results[insight1].dt.strftime("%Y-%b")
                     fig, ax = plt.subplots(figsize=(9,9))
                     sns.lineplot(data=results, x=insight1, y='Total', hue=insight2)
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     for i in ax.containers:
                         ax.bar_label(i)
                     plt.xlabel(insight1)
@@ -559,10 +588,12 @@ class MultiVarientInsights(View):
                 else:
                     insight_results = df.groupby([insight1,insight2])[parameter].mean().reset_index()
                     results = insight_results.rename(columns={insight_results.columns[2]:'Total'})
-                    total_by_groups = results.groupby(insight1)['Total'].mean().to_list()
+                    total_by_groups = results.groupby(insight1)['Total'].mean().round(2).to_list()
                     fig, ax = plt.subplots(figsize=(9,9))
                     sns.set(font_scale=0.8)
                     sns.barplot(data=results, x=insight1, y='Total', hue=insight2)
+                    current_values = plt.gca().get_yticks()
+                    plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                     for i in ax.containers:
                         ax.bar_label(i)
                     plt.xlabel(insight1)
@@ -651,6 +682,8 @@ class Forecast(View):
                 data = []
                 data = json.loads(json_records)
                 forecast_results.plot()
+                current_values = plt.gca().get_yticks()
+                plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                 buf = BytesIO()
                 plt.savefig(buf, format='png',dpi = 300, bbox_inches='tight')
                 line_plot = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')
@@ -661,7 +694,7 @@ class Forecast(View):
                 context={'err':err}
         else:
             df[insight] = pd.to_datetime(df[insight])
-            insight_results = df.resample('M',on = insight)[parameter].sum()
+            insight_results = df.resample('M',on = insight)[parameter].sum().round(2)
             insight_results = insight_results.to_frame()
             results = insight_results.rename(columns={insight_results.columns[0]:'Total'})
             results = results.to_period('M').reset_index()
@@ -709,12 +742,13 @@ class Forecast(View):
                 df_future = df_future.drop('Actual',axis=1)
                 df_future['Date'] = df_future['Date'].dt.strftime("%Y-%b")
                 df_future['Date'] = df_future['Date'].astype(str)
-                present_columns = df_future.columns.to_list()
-                
+                present_columns = df_future.columns.to_list()        
                 json_records = df_future.reset_index().to_json(orient ='records')
                 data = []
                 data = json.loads(json_records)
                 forecast_results.plot()
+                current_values = plt.gca().get_yticks()
+                plt.gca().set_yticklabels(['{:,.0f}'.format(x) for x in current_values])
                 buf = BytesIO()
                 plt.savefig(buf, format='png',dpi = 300, bbox_inches='tight')
                 line_plot = base64.b64encode(buf.getvalue()).decode('utf-8').replace('\n', '')

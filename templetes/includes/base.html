@@ -34,35 +34,39 @@
                 <div id='msg'>
                 </div>
                 {% endblock %}
-                {% block content %}{% endblock %}
+                {% block content %}
+                {% endblock %}
             </div>
             {% block footer %}{% endblock %}
         </div>
         {% block javascript %}{% endblock %}
         {% block extra_js %}
-            <script>
+            <script> 
               function savePDF() {
-                //$('#msg').html('<p style="text-align:center;">File is being downloaded...</p>');
-                $('#row').removeClass('row');
-                $('#col8').removeClass('col-sm-8');
-                $('#col4').removeClass('col-sm-4');
-                $('#col4').removeAttr('style');
-                var element = document.getElementById('content');
-                var opt = {
-                  margin: 0.5,
-                  filename: 'download.pdf',
-                  image: { type: 'png', quantity: 1 },
-                  html2canvas: { quality:2,scale:2},
-                  jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', precision: '12' }
-                };
-                html2pdf().set(opt).from(element).save();
-                setTimeout(function(){
-                  $('#col4').css("border-left", "1px solid black");
-                  $('#row').addClass('row');
-                  $('#col8').addClass('col-sm-8');
-                  $('#col4').addClass('col-sm-4');
-                 $('#msg').empty();
-                }, 15000);
+                var conf = confirm("The content will be downloaded to your machine");
+                if (conf == true){
+                    $('#msg').html('<p style="text-align:center;">File is being downloaded...</p>');
+                    $('#row').removeClass('row');
+                    $('#col8').removeClass('col-sm-8');
+                    $('#col4').removeClass('col-sm-4');
+                    $('#col4').removeAttr('style');
+                    var element = document.getElementById('content');
+                    var opt = {
+                        margin: 0.5,
+                        filename: 'download.pdf',
+                        image: { type: 'png', quantity: 1 },
+                        html2canvas: { quality:2,scale:2},
+                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait', precision: '12' }
+                    };
+                    html2pdf().set(opt).from(element).save();
+                    setTimeout(function(){
+                    $('#col4').css("border-left", "1px solid black");
+                    $('#row').addClass('row');
+                    $('#col8').addClass('col-sm-8');
+                    $('#col4').addClass('col-sm-4');
+                    $('#msg').empty();
+                    }, 15000);
+                }     
               }
             </script>
         {% endblock %}
