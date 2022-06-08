@@ -1,0 +1,90 @@
+{% extends 'includes/base.html' %}
+{% load static %}
+{% block title %}Export Page{% endblock %}
+{% block content %}
+   <div class='row'>
+    <div class='col-sm-2'>
+      <a  href="#" onclick=ExportTable() class="btn btn-outline-danger">Excel Export</a>
+    </div>
+    <div class='col-sm-2'>
+      <a  href="#" onclick=savePDF() class="btn btn-outline-danger">PDF Export</a>
+      </div>
+    <div class='col-sm-2'>
+      <a  href="{% url 'datainsights:clear_all' %}" class="btn btn-outline-danger">Clear All</a>
+    </div> 
+  </div>
+    {% if err %}<script>alert('{{err }}');</script>{% endif %}
+    <div hidden id='file_name'>SelectedFiles</div>
+    <div id='content'>
+      <table class="table" style="font-size: 10px; border:1px" id = 'export'>
+      {% for key,value in context.items %}
+                  {% if 'present_columns' in key %}
+                  <tr>
+                  </tr>
+                  <tr>
+                  </tr>
+                  <tr>
+                  <td style='padding-top:25px; text-align:center;'><h5>Insights of {{value.1}} on {{value.0}}</h5></td>
+                  <td>
+                    <form action={% url 'datainsights:remove_specific' %} method='post'>
+                      {% csrf_token %}
+                      <input type='hidden' value ='{{key}}' name='key'/>
+                      <input type="submit" class="btn btn-outline-danger mt-3" value='Remove'>
+                    </form>
+                  </td>
+                  </tr>
+                  <tr>
+                  {% for present_columns in value %}
+                      <th>{{present_columns}}</th>
+                  {% endfor %}
+                  </tr>
+                  {% elif 'data' in key %}
+                  {% for data in value %}
+                  <tr>
+                    {% for i in data %}
+                    {% if 'index' not in i %}
+                      {% load get_data %}
+                          <td>{{ data|get_data:i}}</td>
+                    {% endif %}      
+                    {% endfor %}
+                    </tr> 
+                  {% endfor %}
+                  {% endif %}
+    {% endfor %}
+    {% for key,value in multicontext.items %}
+                  {% if 'present_columns' in key %}
+                  <tr>
+                  </tr>
+                  <tr>
+                  </tr>
+                  <tr>
+                  <td style='padding-top:25px; text-align:center;' colspan='2'><h5>Insights of {{value.2}} on {{value.0}} and {{value.1}}</h5></td>
+                  <td>
+                    <form action={% url 'datainsights:remove_specific' %} method='post'>
+                      {% csrf_token %}
+                      <input type='hidden' value ='{{key}}' name='key1'/>
+                      <input type="submit" class="btn btn-outline-danger mt-3" value='Remove'>
+                    </form>
+                  </td>
+                  </tr>
+                  <tr>
+                  {% for present_columns in value %}
+                      <th>{{present_columns}}</th>
+                  {% endfor %}
+                  </tr>
+                  {% elif 'data' in key %}
+                  {% for data in value %}
+                  <tr>
+                    {% for i in data %}
+                    {% if 'index' not in i %}
+                      {% load get_data %}
+                          <td>{{ data|get_data:i}}</td>
+                    {% endif %}      
+                    {% endfor %}
+                    </tr> 
+                  {% endfor %}
+                  {% endif %}
+    {% endfor %}
+    </table>
+  </div>
+{% endblock %}

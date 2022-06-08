@@ -17,32 +17,6 @@
             <input type="submit" value="Upload" class="btn btn-outline-danger mt-3">
         </form>
         <div class='wait' style='text-align:center;'></div>
-        {% if data %}
-            {% if present_columns %}
-                <div style='padding-top:5px;'>
-                    <a href="{% url 'datainsights:insights' %}"
-                       class="btn btn-outline-danger mt-3"
-                       role='button'>Insights</a>
-                </div>
-                <div>
-                    <h5 style='text-align:center;'>Provided Data</h5>
-                    <table class="table" style="font-size: 10px; border:1px">
-                        <tr>
-                            {% for i in present_columns %}<th>{{i }}</th>{% endfor %}
-                        </tr>
-                        {% for i in data %}
-                            <tr>
-                                {% for j in present_columns %}
-                                    {% load get_data %}
-                                    <td>{{ i|get_data:j }}</td>
-                                {% endfor %}
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
-        {% endif %}
-    {% endif %}
 {% endblock %}
 {% block javascript %}
     <script>

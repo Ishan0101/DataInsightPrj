@@ -5,6 +5,28 @@
     {% if err %}<script>alert('{{err }}');</script>{% endif %}
     {% if data %}
         <div class='container'>
+            <div class='row' style='padding-bottom:20px;'>
+                <form class='col-sm-2' action={% url 'datainsights:multivarient_export' %}  method='post' id='multivarientform'>
+                    {% csrf_token %}
+                    <input type='hidden' value ='{{insight1}}' name='insight1'/>
+                    <input type='hidden' value ='{{insight2}}' name='insight2'/>
+                    {% if insight_type %}
+                    <input type='hidden' value ='{{insight_type}}' name='insight_type'/>
+                    {% endif %}
+                    {% if parameter %}
+                    <input type='hidden' value='{{parameter}}' name='parameter'/>
+                    {% else %}
+                    <input type='hidden' value='count' name='parameter'/>
+                    {% endif %}
+                    <input type="submit" class="btn btn-outline-danger" value='Add to Export'>
+                </form>
+                <div class='col-sm-2'>
+                    <a  href="#" onclick=ExportTable() class="btn btn-outline-danger">Excel Export</a>
+                </div>
+                <div class='col-sm-2'>
+                    <a  href="#" onclick=savePDF() class="btn btn-outline-danger">PDF Export</a>
+                </div>
+            </div>
             <div class='col-sm-3'>
                 <label>Obtain insights as:</label>
                 <select class="form-select shadow-none bg-light border-1"
@@ -26,8 +48,23 @@
                 </select>
                 <br>
             </div>
+            <table class="table export_only" style="font-size: 10px; border:1px" id = 'export'>
+                <tr>
+                {% for i in present_columns %}
+                    <th>{{i}}</th>
+                {% endfor %}
+                </tr>
+                {% for i in data %}
+                    <tr>
+                    {% for j in present_columns %}
+                        {% load get_data %}
+                        <td>{{ i|get_data:j}}</td>
+                    {% endfor %}
+                     </tr> 
+                {% endfor %}
+            </table>
             <div id ='content'>
-                <h5 style='text-align:center;'>Obtained Insights of {{ insight1 }} and {{ insight2 }} on {% if insight_type %}{{insight_type}} of {% endif %} {{parameter}}</h5>
+                <h5 style='text-align:center;' id='file_name'>Obtained Insights of {{ insight1 }} and {{ insight2 }} on {% if insight_type %}{{insight_type}} of {% endif %} {{parameter}}</h5>
                 <div class ='row' id='row'>
                     <div class='col-sm-8' id='col8'>
                         <div id = 'bar'>
@@ -44,7 +81,6 @@
                                     {% for i in present_columns %}
                                     <th>{{i}}</th>
                                     {% endfor %}
-                                    <th>OverAll</th>
                                 </tr>
                                 {% for tot in total_for_groups %}
                                 {% for data0 in d %}
@@ -52,13 +88,13 @@
                                     {% for data in data0.list %}
                                         <tr>
                                             {% if forloop.first %}
-                                                    <td rowspan = '{{data0.list|length}}'  style=' border-bottom:1px solid black;'>{{data0.grouper}}</td>
+                                                    <td rowspan = '{{data0.list|length}}'  style=' border-bottom:1px dashed black;'>{{data0.grouper}}</td>
                                             {% endif %}
                                             {% if forloop.last %}
                                             {% for j in present_columns %}
                                                 {% if not forloop.first %}
                                                 {% load get_data %}
-                                                <td style=' border-bottom:1px solid black'>{{ data|get_data:j}}</td>
+                                                <td style=' border-bottom:1px dashed black'>{{ data|get_data:j}}</td>
                                                 {% endif %}
                                             {% endfor %}
                                             {% else %}
@@ -69,8 +105,11 @@
                                                 {% endif %}
                                             {% endfor %}
                                             {% endif %}
-                                            {% if forloop.first %}
-                                                    <td rowspan = '{{data0.list|length}}'  style=' border-bottom:1px solid black; border-left: 1px dashed black;'>{{ tot }}</td>
+                                            {% if forloop.last %}
+                                                   </tr>
+                                                    <tr style=' border-bottom:1px solid black;'>
+                                                    <td colspan =2></td>
+                                                    <td>{{ tot }}</td>
                                             {% endif %}
                                             
                                         </tr>
@@ -83,12 +122,15 @@
                     </div>  
                     <div class ='col-sm-4' style='border-left: 1px solid black;' id='col4'>
                         <p style='text-align:center;' >The maximum {{ parameter }} is seen in:</p>
-                            <table class="table" style="font-size: 10px; border:1px">
+                            <table class="table" style="font-size: 10px; border:1px" id = 'max_table'>
+                                <thead>
                                 <tr>
                                 {% for i in present_columns %}
                                     <th>{{i}}</th>
                                 {% endfor %}
                                 </tr>
+                                </thead>
+                                <tbody>
                                 {% for i in max_data %}
                                 <tr>
                                 {% for j in present_columns %}
@@ -97,16 +139,27 @@
                                 {% endfor %}
                                 </tr> 
                                 {% endfor %}
+                                </tbody>
+                                {% if max_data|length > 1 %}
+                                <tfoot id='showmax'>
+                                <tr>
+                                    <td colspan='3'><a href="#" onclick=showAllMax() >Show More</a></td>
+                                <tr>
+                                </tfoot>
+                                {% endif %}
                             </table>
                             <br>
                             <br>
                             <p style='text-align:center;' >The minimum {{ parameter }} is seen in:</p>
-                            <table class="table" style="font-size: 10px; border:1px">
+                            <table class="table" style="font-size: 10px; border:1px" id='min_table'>
+                                <thead>
                                 <tr>
                                 {% for i in present_columns %}
                                     <th>{{i}}</th>
                                 {% endfor %}
                                 </tr>
+                                </thead>
+                                <tbody>
                                 {% for i in min_data %}
                                 <tr>
                                 {% for j in present_columns %}
@@ -115,6 +168,15 @@
                                 {% endfor %}
                                 </tr> 
                                 {% endfor %}
+                                </tbody>
+                                {% if min_data|length > 1 %}
+                                <tfoot id='showmin'>
+                                <tr>
+                                   <td colspan='3'> <a href="#" onclick=showAllMin()>Show More</a> </td>
+                                </tr>
+                                </tfoot>
+                                {% endif %}
+
                             </table>
                     </div>
                 </div>   
@@ -125,6 +187,11 @@
     {% block javascript %} 
       <script>
         $(document).ready(function() {
+                $("#max_table tbody tr").hide();
+                $("#max_table").children('tbody').children('tr:nth-child(1)').show();
+                $("#min_table tbody tr").hide();
+                $("#min_table").children('tbody').children('tr:nth-child(1)').show();
+                $('#export').hide();
                 $("#select_visual").on('change', function() {
                     $(this).find("option:selected").each(function() {
                         var val = $(this).attr("value");
